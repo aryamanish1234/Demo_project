@@ -1,25 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
-import {axios} from 'axios';
+import axios from 'axios';
 const API_BASE_URL = "http://localhost:3001/api/v1";
 
 function App() {
   const [search, setSearch] = useState("");
-  const [searchTimer, setSearchTimer] = useState();
   const [loading, setLoading] = useState(false);
-
-  const updateSearch = (e) => {
+ 
+  const updateSearch = async (e) => {
     setLoading(true);
-    clearTimeout(searchTimer);
-    setSearchTimer(
-      setTimeout(() => {
-        setSearch(e.target.value);
-        setLoading(false);
-      }, 900)
-    );
+    let key = e.target.value;
+    let result = await axios(`http://localhost:3001/api/v1/${key}`); 
+    console.log(result.data);
+    setSearch(result.data);
+
   };
 
-  const SEARCHDATA =  axios.get(`${API_BASE_URL}`)
 
   if (loading) {
     return (
@@ -54,21 +50,8 @@ function App() {
           onChange={updateSearch}
         />
         <div className="grid grid-cols-3 gap-4 mt-7 w-full ">
-          {SEARCHDATA.filter((data) => {
-            console.log("new request");
-            if (search === "") return data;
-            else if (data.primaryText.toLowerCase().includes(search.toLowerCase()))
-              return data;
-            else if (data.headline.includes(search)) return data;
-            else if (data.description.toLowerCase().includes(search.toLowerCase()))
-              return data;
-              else if (data.imageUrl.toLowerCase().includes(search.toLowerCase()))
-              return data;
-              else if (data.companies.toLowerCase().includes(search.toLowerCase()))
-              return data;
-              else if (data.url.toLowerCase().includes(search.toLowerCase()))
-              return data;
-          }).map((data, index) => {
+              {
+          search.data.map((data, index) => {
             return (
               <div
                 key={index}
