@@ -45,16 +45,16 @@ exports.AdsData = async(req, res) => {
 }
 
 
-exports.fetchData = async(req, res) => {
-    company.aggregate([ {
+exports.fetchData = async(req, res) => { 
+   company.aggregate([ {
         $lookup: {
-            from: "Company",
+            from: "ads",
             localField:"companyID",
-            foreignField: "_id",
+            foreignField: "id",
             as: "Ads"
         }
     },
-    { $unwind: "$Ads"}, 
+   { $unwind: "$Ads"}, 
     {
         $project: {
            companies:1, 
@@ -64,46 +64,68 @@ exports.fetchData = async(req, res) => {
            description: "$Ads.description", 
            imageUrl: "$Ads.imageUrl" 
         }
-    }], 
+    }
+], 
     function(err, Data){
-        if ( err )
+        if ( err ){
         throw err;
-  
+        }
+    console.log(Data);
       res.status(200).json(Data)
     }
     )
-    // let arg = {
-    //     query: [
-    //         {
-    //             $lookup: {
-    //                 from: "Company",
-    //                 localField:"companyID",
-    //                 foreignField: "_id",
-    //                 as: "Ads"
-    //             }
-    //         },
-    //         { $unwind: "Ads"}, 
-    //         {
-    //             $project: {
-    //                companies:1, 
-    //                url: 1,
-    //                primaryText: "$Ads.primaryText",
-    //                headline: "$Ads.headline", 
-    //                description: "$Ads.description", 
-    //                imageUrl: "Ads.imageUrl" 
-    //             }
-    //         }
-    //     ], 
+}
+
+exports.fetchDataKey = async(req,res) => {
+    let search = req.params.key;
+  
+
+    company.aggregate([ 
+       
         
+        {
+        $lookup: {
+            from: "ads",
+            localField:"companyID",
+            foreignField: "id",
+            as: "Ads"
+        }
+    },
+  
 
-    //}
+   { $unwind: "$Ads"}, 
+    {
+        $project: {
+           companies:1, 
+           url: 1,
+           primaryText: "$Ads.primaryText",
+           headline: "$Ads.headline", 
+           description: "$Ads.description", 
+           imageUrl: "$Ads.imageUrl" 
+        }
+    },
+], 
+function(err, Data){
+    if ( err ){
+    throw err;
+    }
+    const result = Data.filter((data) => {
+        if (search === "") return data;
+        else if (data.primaryText.toLowerCase().includes(search.toLowerCase()))
+          return data;
+        else if (data.headline.includes(search)) return data;
+        else if (data.description.toLowerCase().includes(search.toLowerCase()))
+          return data;
+          else if (data.imageUrl.toLowerCase().includes(search.toLowerCase()))
+          return data;
+          else if (data.companies.toLowerCase().includes(search.toLowerCase()))
+          return data;
+          else if (data.url.toLowerCase().includes(search.toLowerCase()))
+          return data;
+    })
+    res.send(result);
+    
+}
+    )
 
-//     let AllData = await (arg, "Aggregate");
-//     console.log(AllData);
-//     res.status(200).json(AllData)
-// }catch(err){
-//     console.log(err)
-//     res.status(400).send(err)
-
-// }
 }

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose"); 
 
 const adsSchema = new mongoose.Schema({
-    _id : {
+    id : {
         type: Number, 
         required: true, 
     }, 
